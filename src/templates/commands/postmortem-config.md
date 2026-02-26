@@ -1,6 +1,5 @@
 ---
 description: Show or set postmortem storage root selection
-model: opencode/kimi-k2.5
 subtask: true
 ---
 

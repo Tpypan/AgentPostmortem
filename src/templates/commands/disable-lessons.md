@@ -1,6 +1,5 @@
 ---
 description: Disable or re-enable postmortem lesson injection for the active session
-model: opencode/kimi-k2.5
 subtask: true
 ---
 

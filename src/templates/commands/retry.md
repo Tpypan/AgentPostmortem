@@ -1,6 +1,5 @@
 ---
 description: Preview or emit a guardrailed retry prompt for the last user task
-model: opencode/kimi-k2.5
 subtask: true
 ---
 

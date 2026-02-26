@@ -1,6 +1,5 @@
 ---
 description: Manage stored postmortem failures (list/show/forget/delete/prune/purge)
-model: opencode/kimi-k2.5
 subtask: true
 ---
 

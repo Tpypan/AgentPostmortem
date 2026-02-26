@@ -1,6 +1,5 @@
 ---
 description: Manage stored postmortem guardrail rules (list/show/enable/disable/edit/rate/add_from_failure)
-model: opencode/kimi-k2.5
 subtask: true
 ---
 

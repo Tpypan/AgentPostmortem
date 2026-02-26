@@ -16,38 +16,20 @@ It adds a postmortem workflow to OpenCode so you can inspect failed runs, store 
 - `postmortem_config`: show/set storage mode (`user` or `repo`)
 - `postmortem_eval`: local-only repeat-failure evaluation metrics
 
-This repo also includes command wrappers in `.opencode/commands/` and skills in `.opencode/skills/`.
-
 ## Repository layout
 
-- `.opencode/plugins/postmortem.ts`: plugin entrypoint loaded by OpenCode
-- `.opencode/commands/*.md`: slash command templates
-- `.opencode/skills/*/SKILL.md`: skill definitions
-- `packages/postmortem-plugin/src`: plugin implementation
-- `packages/postmortem-plugin/test`: test suite
+- `src/` — plugin implementation (TypeScript source)
+- `test/` — test suite
+- `scripts/` — init script and utilities
+- `examples/` — minimal config and usage example
+- `dist/` — built output (npm ESM + bundled fallback)
+- `INSTALL.md` — install and usage guide
 
-## Install in your OpenCode project
+## Install
 
-From your project root, copy this repo's plugin files into your project:
+See [INSTALL.md](INSTALL.md) for full instructions.
 
-```bash
-cp -R /path/to/opencode-postmortem/.opencode .
-mkdir -p packages
-cp -R /path/to/opencode-postmortem/packages/postmortem-plugin packages/
-```
-
-Install plugin dependencies:
-
-```bash
-bun install --cwd packages/postmortem-plugin
-```
-
-Then restart OpenCode.
-
-Notes:
-- OpenCode loads project plugins from `.opencode/plugins/`.
-- OpenCode loads project commands from `.opencode/commands/`.
-- OpenCode loads project skills from `.opencode/skills/<name>/SKILL.md`.
+**Quick start**: add `"opencode-postmortem-plugin"` to your `opencode.json` plugin array, then run `npx postmortem-init`.
 
 ## Quick usage
 
@@ -63,22 +45,11 @@ In OpenCode:
 ## Storage and safety
 
 - Default storage is user-data scoped by project ID.
-- Optional repo-local storage can be enabled with `.opencode/postmortem.json` and `{"storage":"repo"}`.
+- Optional repo-local storage can be enabled with `.opencode/postmortem.json` and `{ "storage": "repo" }`.
 - Redaction and caps are applied before persistence and before display/injection.
-
-## Validate install
-
-If your OpenCode CLI has debug commands available:
-
-```bash
-opencode debug skill
-opencode debug config
-```
-
-You should see postmortem skills and command templates in the resolved config.
 
 ## References
 
-- Plugins docs: `https://opencode.ai/docs/plugins`
-- Commands docs: `https://opencode.ai/docs/commands`
-- Skills docs: `https://opencode.ai/docs/skills`
+- Plugins docs: https://opencode.ai/docs/plugins
+- Commands docs: https://opencode.ai/docs/commands
+- Skills docs: https://opencode.ai/docs/skills

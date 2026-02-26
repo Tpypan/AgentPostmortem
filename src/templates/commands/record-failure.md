@@ -1,6 +1,5 @@
 ---
 description: Preview or persist a durable postmortem failure record
-model: opencode/kimi-k2.5
 subtask: true
 ---
 

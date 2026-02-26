@@ -1,6 +1,5 @@
 ---
 description: Forget a stored failure record by id
-model: opencode/kimi-k2.5
 subtask: true
 ---
 

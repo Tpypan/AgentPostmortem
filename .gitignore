@@ -9,3 +9,7 @@ opencode/
 **/dist/
 **/.turbo/
 *.tsbuildinfo
+
+# OpenCode postmortem artifacts
+.opencode/postmortems/
+.opencode/last-run.json

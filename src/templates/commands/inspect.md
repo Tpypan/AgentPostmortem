@@ -1,6 +1,5 @@
 ---
 description: Render a safe summary of the last postmortem run
-model: opencode/kimi-k2.5
 subtask: true
 ---
 

@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "opencode-postmortem-plugin",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "license": "MIT",
+  "description": "Postmortem workflow plugin for OpenCode: failure memory, prevention rules, guardrailed retry",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tpypan/opencode-postmortem.git"
+  },
+  "keywords": [
+    "opencode",
+    "plugin",
+    "postmortem",
+    "ai",
+    "debugging"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "bin": {
+    "postmortem-init": "dist/scripts/init.js"
+  },
+  "files": [
+    "dist",
+    "src/templates",
+    "INSTALL.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "build:check": "bun run build && bun --eval \"import p from './dist/index.js'; process.exit(typeof p === 'function' ? 0 : 1)\"",
+    "test": "bun test",
+    "lint": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "dependencies": {
+    "@opencode-ai/plugin": "^1.2.15",
+    "zod": "4.1.8"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.9.2"
+  },
+  "directories": {
+    "example": "examples",
+    "test": "test"
+  },
+  "author": "",
+  "bugs": {
+    "url": "https://github.com/tpypan/opencode-postmortem/issues"
+  },
+  "homepage": "https://github.com/tpypan/opencode-postmortem#readme"
+}

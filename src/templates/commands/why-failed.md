@@ -1,6 +1,5 @@
 ---
 description: Deterministically analyze a stored failure and generate typed hypotheses + prevention rules
-model: opencode/kimi-k2.5
 subtask: true
 ---
 
