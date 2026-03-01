@@ -1,10 +1,15 @@
 # Installation Guide
 
-## npm (recommended)
+## Requirements
 
-### 1. Add the plugin to your OpenCode config
+- [OpenCode](https://opencode.ai) CLI installed
+- Node.js 16+ (for init command)
 
-In your project root, add the plugin to `opencode.json` (create the file if it doesn't exist):
+## Quick Install
+
+### Step 1: Add to OpenCode config
+
+Create or edit `opencode.json` in your project root:
 
 ```json
 {
@@ -13,84 +18,100 @@ In your project root, add the plugin to `opencode.json` (create the file if it d
 }
 ```
 
-OpenCode automatically installs npm plugins using Bun. No `npm install` or `bun install` needed in your project.
+OpenCode automatically installs npm plugins on startup.
 
-### 2. Install command and skill templates (optional but recommended)
+### Step 2: Initialize templates
 
-Run the init command to copy command wrappers and skill definitions into your project:
-
-```bash
-npx --package agentpostmortem postmortem-init
-```
-
-This copies:
-- `.opencode/commands/*.md` — slash command wrappers (`/inspect`, `/retry`, `/failures`, etc.)
-- `.opencode/skills/*/SKILL.md` — skill definitions for OpenCode agents
-- `.opencode/postmortem.json` — empty per-project config stub
-
-The init command is safe to re-run: it skips files that already exist.
-
-### 3. Restart OpenCode
-
-The plugin loads at OpenCode startup. Restart OpenCode after adding it to the config.
-
----
-
-## Local file install (fallback)
-
-If you cannot use npm or prefer a self-contained setup, use the bundled plugin file.
-
-### 1. Download the bundled plugin
-
-Get `dist/postmortem.plugin.js` from the npm CDN (or build it yourself: `bun run build`).
-```bash
-curl -fsSL https://unpkg.com/agentpostmortem@latest/dist/postmortem.plugin.js -o postmortem.plugin.js
-```
-### 2. Place it in your project
-
-```bash
-mkdir -p .opencode/plugins
-cp postmortem.plugin.js .opencode/plugins/
-```
-
-OpenCode automatically loads all `.js` and `.ts` files from `.opencode/plugins/`.
-
-### 3. Install templates
-
-Run the init command (requires Node.js):
+Run the init command to set up slash commands and skill definitions:
 
 ```bash
 npx --package agentpostmortem postmortem-init
 ```
 
-Or manually copy templates from the [src/templates/](src/templates/) directory.
+This creates:
 
-### 4. Restart OpenCode
+- `.opencode/commands/*.md` — Slash command wrappers
+- `.opencode/skills/*/SKILL.md` — Skill definitions
+- `.opencode/postmortem.json` — Config stub
+
+The init command is idempotent—safe to re-run.
+
+### Step 3: Restart OpenCode
+
+Restart OpenCode to load the plugin.
+
+### Step 4: Verify
+
+```
+/postmortem-config --action show
+```
+
+You should see output with your project ID and storage path.
 
 ---
 
-## Per-project configuration
+## Alternative: Local File Install
 
-The plugin works out of the box with no configuration. By default, postmortem data is stored in your user data directory (scoped by project).
+If you can't use npm, download the bundled plugin directly:
 
-To enable repo-local storage (stored in `.opencode/postmortems/` inside your project), create or edit `.opencode/postmortem.json`:
+```bash
+# Download the bundle
+curl -fsSL https://unpkg.com/agentpostmortem@latest/dist/postmortem.plugin.js \
+  -o .opencode/plugins/postmortem.plugin.js
+
+# Initialize templates
+npx --package agentpostmortem postmortem-init
+```
+
+OpenCode auto-loads `.js` files from `.opencode/plugins/`.
+
+---
+
+## Configuration
+
+### Storage Location
+
+**Default (user-scoped):**
+
+```
+~/Library/Application Support/opencode/postmortems/<project-id>/
+```
+
+**Repo-local storage** (for sharing with team):
 
 ```json
+// .opencode/postmortem.json
 {
   "storage": "repo"
 }
 ```
 
-> **Note**: Repo-local storage is only safe if `.opencode/` is not a symlink. The plugin checks this automatically.
+Data stored in `.opencode/postmortems/` within your project.
+
+> **Note**: Repo-local storage requires `.opencode/` to be a real directory, not a symlink.
+
+### Options
+
+| Option     | Type               | Default  | Description                                  |
+| ---------- | ------------------ | -------- | -------------------------------------------- |
+| `storage`  | `"user" \| "repo"` | `"user"` | Where to store postmortem data               |
+| `storeRaw` | `boolean`          | `false`  | Save unredacted snapshots (use with caution) |
 
 ---
 
-## Verifying the install
+## Troubleshooting
 
-In an OpenCode session, run:
+### Plugin not loading
 
-```
-tool: postmortem_config --action show --json
-```
+1. Check `opencode.json` syntax is valid JSON
+2. Ensure `"agentpostmortem"` is in the `plugin` array
+3. Restart OpenCode completely
 
-You should see the config, storage path, and project ID.
+### Init command fails
+
+1. Ensure Node.js 16+ is installed: `node --version`
+2. Try with npx: `npx --package agentpostmortem postmortem-init`
+
+### Commands not found
+
+The init command must run to create `.opencode/commands/*.md` files. Re-run it if commands are missing.

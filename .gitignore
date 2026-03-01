@@ -13,3 +13,4 @@ opencode/
 # OpenCode postmortem artifacts
 .opencode/postmortems/
 .opencode/last-run.json
+.DS_Store

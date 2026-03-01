@@ -1,116 +1,191 @@
 # AgentPostmortem
 
-`agentpostmortem` adds a complete postmortem loop to OpenCode: capture failures, analyze root causes, create guardrails, and retry with context-aware constraints.
+[![npm version](https://img.shields.io/npm/v/agentpostmortem.svg)](https://www.npmjs.com/package/agentpostmortem)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![OpenCode Plugin](https://img.shields.io/badge/OpenCode-Plugin-blue.svg)](https://opencode.ai)
 
-This repository is the standalone plugin distribution (not the OpenCode source tree).
+A postmortem workflow plugin for [OpenCode](https://opencode.ai) that captures failure context, generates prevention rules, and injects guardrails into future retries—helping AI agents learn from mistakes instead of repeating them.
 
-## Why this plugin is useful
+## Why AgentPostmortem?
 
-- Persist failure history across sessions instead of losing context after one run.
-- Generate deterministic failure analysis and reusable prevention rules.
-- Keep retries bounded and explainable (`/retry --explain`).
-- Evaluate repeat-failure trends locally (`/postmortem-eval`) without telemetry.
+AI coding agents often make the same mistakes repeatedly because they lack persistent memory across sessions. AgentPostmortem solves this by:
 
-## What this plugin adds
+- **Capturing failure evidence** — Files touched, commands run, errors encountered
+- **Generating prevention rules** — Short, actionable constraints derived from failures
+- **Injecting guardrails** — Relevant rules are automatically included in retry prompts
+- **Tracking metrics** — Measure if failures are actually decreasing over time
 
-- `postmortem_inspect`: view the latest redacted last-run snapshot
-- `postmortem_record_failure`: persist a durable failure record
-- `postmortem_why_failed`: deterministic analysis + 1-3 prevention rules
-- `postmortem_rules`: list/show/enable/disable/edit/rate/import rules
-- `postmortem_failures`: list/show/forget/delete/prune/purge failures
-- `postmortem_retry`: generate a retry prompt with relevant guardrails (`--explain` supported)
-- `postmortem_disable_lessons`: disable/enable injection for the current session
-- `postmortem_config`: show/set storage mode (`user` or `repo`)
-- `postmortem_eval`: local-only repeat-failure evaluation metrics
+All data stays local. No telemetry, no cloud sync.
 
-## Install
+## Installation
 
-See [INSTALL.md](INSTALL.md) for full setup.
+### Quick Start
 
-Quick start:
+1. Add the plugin to your `opencode.json`:
 
-1. Add "agentpostmortem" to your `opencode.json` plugin array.
-2. Run `npx --package agentpostmortem postmortem-init` in your project.
-3. Restart OpenCode.
-
-## Usage examples
-
-The sections below show realistic command sequences you can run in OpenCode.
-For the full per-command catalog, see [commands.md](examples/minimal/commands.md).
-
-### 1) Capture and analyze a failure in minutes
-
-```text
-/inspect --json --errors
-/record-failure --yes --json
-/why-failed --latest --json
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": ["agentpostmortem"]
+}
 ```
 
-Use this when a run fails and you want a durable record plus deterministic hypotheses before trying fixes.
+2. Initialize templates in your project:
 
-### 2) Build guardrails, then retry with context
+```bash
+npx --package agentpostmortem postmortem-init
+```
 
-```text
-/rules --action list --json
+3. Restart OpenCode
+
+### Verify Installation
+
+In an OpenCode session, run:
+
+```
+/postmortem-config --action show
+```
+
+You should see the config output with your project ID and storage path.
+
+## Commands
+
+| Command              | Description                                                 |
+| -------------------- | ----------------------------------------------------------- |
+| `/inspect`           | View the last run's context: files, diffs, commands, errors |
+| `/record-failure`    | Save a structured failure record for the last attempt       |
+| `/why-failed`        | Analyze a failure and generate prevention rules             |
+| `/rules`             | Manage prevention rules (list, edit, disable, rate)         |
+| `/failures`          | Browse and manage failure history                           |
+| `/retry`             | Retry the last task with relevant guardrails injected       |
+| `/disable-lessons`   | Temporarily disable guardrail injection                     |
+| `/postmortem-config` | Configure storage location (user or repo)                   |
+| `/postmortem-eval`   | View repeat-failure metrics                                 |
+
+## Usage Examples
+
+### Capture and analyze a failure
+
+When an agent attempt fails:
+
+```
+/inspect --errors
+/record-failure --yes
+/why-failed --latest
+```
+
+This captures what happened, saves a durable record, and generates 1-3 prevention rules.
+
+### Retry with guardrails
+
+Before retrying a failed task:
+
+```
+/rules --action list
 /retry --explain
-/retry --yes
 ```
 
-This sequence helps you review active rules, see why each rule was selected, then execute a guarded retry prompt.
+The `/retry` command injects the most relevant prevention rules (max 3, ~400 tokens) into the prompt. Use `--explain` to see which rules were selected and why.
 
-### 3) Tune behavior during a long debugging session
+### Manage failure memory
 
-```text
-/disable-lessons --json
-/disable-lessons --enable --json
-/postmortem-config --action show --json
+View and clean up old records:
+
 ```
-
-Use `/disable-lessons` when you want a temporary clean session, then re-enable guardrail injection when you are ready.
-
-### 4) Manage failure memory and clean up stale records
-
-```text
-/failures --action list --json
-/failures --action show --id <failure-id> --json
+/failures --action list
 /forget <failure-id>
 ```
 
-You can inspect specific incidents and retire low-value memory entries while preserving the rest of your history.
+Forgotten records won't be used for guardrail injection but remain in history.
 
-### 5) Evaluate if failures are repeating
+### Evaluate improvement
 
-```text
-/postmortem-eval --json --window 20
+Track whether failures are repeating:
+
+```
+/postmortem-eval --window 20
 ```
 
-This reports repeat-failure metrics so you can measure whether new rules are reducing recurrence.
+Returns repeat-failure rate and other metrics computed locally.
 
-## Examples folder
+## Configuration
 
-- `examples/minimal/opencode.json` - minimal plugin config for a project
-- `examples/minimal/README.md` - minimal setup walkthrough and file map
-- `examples/minimal/commands.md` - full flag-by-flag reference for every command
-- `examples/minimal/playbooks.md` - end-to-end incident response and maintenance workflows
-- `examples/minimal/commands/` - per-command deep-dive examples
+### Storage Location
 
-## Repository layout
+By default, data is stored in your user directory, scoped by project ID:
 
-- `src/` - plugin implementation (TypeScript source)
-- `src/templates/` - command and skill templates copied by `postmortem-init`
-- `test/` - test suite
-- `scripts/` - init script source
-- `examples/` - runnable configuration and command examples
-- `dist/` - build output (npm ESM + bundled fallback)
+```
+~/Library/Application Support/opencode/postmortems/<project-id>/
+```
 
-## Storage and safety
+To store data in your repository (for sharing across machines or team members):
 
-- Default storage is user-data scoped by project ID.
-- Optional repo-local storage can be enabled with `.opencode/postmortem.json` and `{ "storage": "repo" }`.
-- Redaction and caps are applied before persistence and before display/injection.
+```json
+// .opencode/postmortem.json
+{
+  "storage": "repo"
+}
+```
 
-## References
+Data will be stored in `.opencode/postmortems/` within your project.
 
-- Plugins docs: https://opencode.ai/docs/plugins
-- Commands docs: https://opencode.ai/docs/commands
-- Skills docs: https://opencode.ai/docs/skills
+### Privacy & Redaction
+
+All text is redacted before persistence and injection:
+
+- API keys, tokens, passwords
+- Private keys (PEM format)
+- Database connection strings
+
+## Project Structure
+
+```
+agentpostmortem/
+├── src/
+│   ├── index.ts              # Plugin entry point
+│   ├── postmortem.plugin.ts  # OpenCode plugin loader
+│   ├── analysis.ts           # Failure classification
+│   ├── injection.ts          # Guardrail injection logic
+│   ├── snapshot/             # Last-run context capture
+│   ├── storage/              # File storage and locking
+│   ├── store/                # Failure record management
+│   └── templates/            # Command/skill templates
+├── test/                     # Test suite
+├── examples/                 # Usage examples
+├── dist/                     # Build output
+└── scripts/                  # Init script
+```
+
+## Development
+
+```bash
+# Install dependencies
+bun install
+
+# Build
+bun run build
+
+# Test
+bun test
+
+# Lint
+bun run lint
+```
+
+## Documentation
+
+- [Installation Guide](INSTALL.md) — Detailed setup instructions
+- [Examples](examples/minimal/) — Full command reference and playbooks
+- [OpenCode Plugins](https://opencode.ai/docs/plugins) — Plugin documentation
+
+## Contributing
+
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for version history.
+
+## License
+
+MIT © tpypan
